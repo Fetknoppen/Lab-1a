@@ -10,7 +10,6 @@
 */ 
 #include "calcLib.h"
 
-
 /* array of char* that points to char arrays.  */ 
 char *arith[]={"add","div","mul","fsub","fadd","fdiv","fmul","fsub"};
 
