@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <string.h>
 #include <string>
 #include <iostream>
 // Enable if you want debugging to be printed, see examble below.
@@ -17,6 +18,9 @@
 // Included to get the support library
 //#include <calcLib.h>
 
+using namespace  std;
+
+
 int main(int argc, char *argv[]){
 
   /*
@@ -26,63 +30,51 @@ int main(int argc, char *argv[]){
   char delim[]=":";
   char *Desthost=strtok(argv[1],delim);
   char *Destport=strtok(NULL,delim);
+  //string ipAddr = argv[0];
+  //int port = atoi(argv[1]);
   // *Desthost now points to a sting holding whatever came before the delimiter, ':'.
   // *Dstport points to whatever string came after the delimiter. 
 
   /* Do magic */
-  // make a socket
+  //make socket
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if(sock == -1){
-    return 1; //could not make socket
+    printf("Error could not make socket\n");
+    return 1;
   }
-
-
-  int port=atoi(Destport);
-  std::string ip = std::string(Desthost);
+  int port = atoi(Destport);
+  string ipAddr = Desthost;
   
-
-  sockaddr_in hint;
+  struct sockaddr_in hint;
   hint.sin_family = AF_INET;
   hint.sin_port = htons(port);
-  //convert the string ip to an ip adress
-  inet_pton(AF_INET, ip.c_str(), &hint.sin_addr);
+  inet_pton(AF_INET, ipAddr.c_str(), &hint.sin_addr);
 
-  #ifdef DEBUG 
-    printf("Host %s, and port %d.\n",Desthost,port);
-  #endif
-
-  //connect to server
-  if(connect(sock, (sockaddr*)&hint, sizeof(hint))==-1){
-    return 1; // could not connect to server
+  //koppla till servern
+  int connectRes = connect(sock, (sockaddr*)&hint, sizeof(hint));
+  if(connectRes == -1){
+    printf("Error could not connect\n");
+    return 1;
   }
 
-  char buf[4096];
-  std::string userInput;
+  //prata med servern
+  char buf[10000];
 
-  //Change order here, the server talks first
-  //Talk to server
-  do{
-    //Enter lines of text
-    std::cout<<"< ";
-    getline(std::cin, userInput);
-    
-    //Send to server
-    if(send(sock, userInput.c_str(), userInput.size()+1, 0)==-1){
-      std::cout<<"Could not send to server\n";
-      continue;
-    }
+  memset(buf, 0, sizeof(buf));
+  int bytesRecived = recv(sock, buf, sizeof(buf), 0);
+  printf("%s\n%d", buf, bytesRecived);
 
-    //Wait for response
-    memset(buf, 0, 4096);
-    int bytesReceived = recv(sock, buf, 4096, 0);
+  //Check the protcols
 
-    //Desplay response
-    std::cout<<"SERVER>"<<std::string(buf, bytesReceived)<<"\n";
-    
+  int sendRes = send(sock, "OK\n", 3, sizeof("OK\n"));
+  if(sendRes == -1){
+    printf()
+  }
+  printf("OK\n");
 
 
-  }while(true);
 
+  
   close(sock);
 
   return 0;
