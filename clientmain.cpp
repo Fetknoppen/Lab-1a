@@ -19,10 +19,27 @@
 //#include <calcLib.h>
 
 using namespace  std;
-
+/*string CheckForCommands(char buf[], string commands[]){
+  string buffer = string(buf);
+  for(int i = 0; i < sizeof(commands); i++){
+    if(buffer.find(commands[i]) != string::npos){
+      //foud command
+      if(commands[i] == "TEXT"){
+        if(buffer.find("TCP") != string::npos){
+          //Found both TEXT and TCP
+          return "OK\n";
+        }
+      }
+      else{
+        return commands[i];
+      }
+    }
+  }
+}*/
 
 int main(int argc, char *argv[]){
 
+  //initCalcLib();
   /*
     Read first input, assumes <ip>:<port> syntax, convert into one string (Desthost) and one integer (port). 
      Atm, works only on dotted notation, i.e. IPv4 and DNS. IPv6 does not work if its using ':'. 
@@ -60,18 +77,109 @@ int main(int argc, char *argv[]){
   //prata med servern
   char buf[10000];
 
-  memset(buf, 0, sizeof(buf));
-  int bytesRecived = recv(sock, buf, sizeof(buf), 0);
-  printf("%s\n%d", buf, bytesRecived);
+  //char *commands[8] = {"add", "sub", "mul", "div", "fadd", "fsub", "fmul", "fdiv"};
+  //while(1){
+    memset(buf, 0, sizeof(buf));
+    int bytesRecived = recv(sock, &buf, sizeof(buf), 0);
+    printf("%s", buf);
+    if(string(buf).find("TEXT TCP") != string::npos){
+      int sendRes = send(sock, "OK\n", sizeof("OK\n"), 0);
+      if(sendRes == -1){
+        printf("Could not send\n");
+        return 1;
+      }
+      printf("OK\n");
+    }
+    else{
+      //Close
+      return 0;
+    }
+
+    memset(buf, 0, sizeof(buf));
+    bytesRecived = recv(sock, buf, sizeof(buf), 0);
+    printf("%s", buf);
+    char *calc = strtok(buf, " "); 
+    char *num1 = strtok(NULL, " ");
+    char *num2 = strtok(NULL, " ");
+    int i1, i2, iresult;
+    double f1, f2, fresult;
+
+    //printf("Operatoin:%s\n", calc);
+
+    if(string(calc).at(0)!='f'){
+      //printf("int value\n");
+      i1 = stoi(num1);
+      i2 = stoi(num2);
+      if(string(calc) == "add"){
+        iresult = i1+i2;
+      }
+      else if(string(calc)== "sub"){
+        iresult = i1-i2;
+      }
+      else if(string(calc) == "mul"){
+        iresult = i1*i2;
+      }
+      else if(string(calc) == "div"){
+        iresult = i1/i2;
+      }
+      printf("%d\n",iresult);
+      
+      int sendRes = send(sock, &iresult, sizeof(iresult), 0);
+      if(sendRes == -1){
+        printf("Could not send result\n");
+        return 1;
+      }
+      
+    }
+    else{
+      //printf("float value\n");
+      f1 = stod(num1);
+      f2 = stod(num2);
+      if(string(calc) == "fadd"){
+        fresult = f1+f2;
+      }
+      else if(string(calc) == "fsub"){
+        fresult = f1-f2;
+      }
+      else if(string(calc) == "fmul"){
+        fresult = f1*f2;
+      }
+      else if(string(calc)== "fdiv"){
+        fresult = f1/f2;
+      }
+      printf("%8.8g\n",fresult);
+      int sendRes = send(sock, &fresult, sizeof(fresult)+1, 0);
+      if(sendRes == -1){
+        printf("Could not send result\n");
+        return 1;
+      }
+      
+    }
+    //Får inte sista sveret? Kan vara att jag skickar fel datatyp som svar?
+    memset(buf, 0, sizeof(buf));
+    bytesRecived = recv(sock, buf, sizeof(buf), 0);
+    printf("%s\n", buf);
+    
+    
+    
+ 
+  //}
+  
+  //printf("%sBytes recived: %d\n", buf, bytesRecived);
 
   //Check the protcols
 
-  int sendRes = send(sock, "OK\n", 3, sizeof("OK\n"));
+  /*int sendRes = send(sock, "OK\n", 3, sizeof("OK\n"));
   if(sendRes == -1){
-    printf()
+    printf("Could not send\n");
+    return 1;
   }
   printf("OK\n");
 
+  memset(buf, 0, sizeof(buf));
+  bytesRecived = recv(sock, buf, sizeof(buf), 0);
+  //printf("%sBytes recived: %d\n", buf, bytesRecived);
+  //printf("")*/
 
 
   
