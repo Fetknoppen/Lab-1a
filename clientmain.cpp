@@ -19,23 +19,6 @@
 //#include <calcLib.h>
 
 using namespace  std;
-/*string CheckForCommands(char buf[], string commands[]){
-  string buffer = string(buf);
-  for(int i = 0; i < sizeof(commands); i++){
-    if(buffer.find(commands[i]) != string::npos){
-      //foud command
-      if(commands[i] == "TEXT"){
-        if(buffer.find("TCP") != string::npos){
-          //Found both TEXT and TCP
-          return "OK\n";
-        }
-      }
-      else{
-        return commands[i];
-      }
-    }
-  }
-}*/
 
 int main(int argc, char *argv[]){
 
@@ -47,8 +30,6 @@ int main(int argc, char *argv[]){
   char delim[]=":";
   char *Desthost=strtok(argv[1],delim);
   char *Destport=strtok(NULL,delim);
-  //string ipAddr = argv[0];
-  //int port = atoi(argv[1]);
   // *Desthost now points to a sting holding whatever came before the delimiter, ':'.
   // *Dstport points to whatever string came after the delimiter. 
 
@@ -77,8 +58,6 @@ int main(int argc, char *argv[]){
   //prata med servern
   char buf[10000];
 
-  //char *commands[8] = {"add", "sub", "mul", "div", "fadd", "fsub", "fmul", "fdiv"};
-  //while(1){
     memset(buf, 0, sizeof(buf));
     int bytesRecived = recv(sock, &buf, sizeof(buf), 0);
     printf("%s", buf);
@@ -91,7 +70,8 @@ int main(int argc, char *argv[]){
       printf("OK\n");
     }
     else{
-      //Close
+      printf("Protocols not supported.\n");
+      close(sock);
       return 0;
     }
 
@@ -102,12 +82,12 @@ int main(int argc, char *argv[]){
     char *num1 = strtok(NULL, " ");
     char *num2 = strtok(NULL, " ");
     int i1, i2, iresult;
-    double f1, f2, fresult;
+    float f1, f2, fresult;
+    string result = "";
 
-    //printf("Operatoin:%s\n", calc);
-
+  //Calculate result
+  //Int
     if(string(calc).at(0)!='f'){
-      //printf("int value\n");
       i1 = stoi(num1);
       i2 = stoi(num2);
       if(string(calc) == "add"){
@@ -123,16 +103,11 @@ int main(int argc, char *argv[]){
         iresult = i1/i2;
       }
       printf("%d\n",iresult);
-      
-      int sendRes = send(sock, &iresult, sizeof(iresult), 0);
-      if(sendRes == -1){
-        printf("Could not send result\n");
-        return 1;
-      }
+      result = to_string(iresult)+"\n";
       
     }
+    //floating point
     else{
-      //printf("float value\n");
       f1 = stod(num1);
       f2 = stod(num2);
       if(string(calc) == "fadd"){
@@ -148,14 +123,17 @@ int main(int argc, char *argv[]){
         fresult = f1/f2;
       }
       printf("%8.8g\n",fresult);
-      int sendRes = send(sock, &fresult, sizeof(fresult)+1, 0);
-      if(sendRes == -1){
-        printf("Could not send result\n");
-        return 1;
-      }
+      result = to_string(fresult)+"\n";
       
     }
-    //Får inte sista sveret? Kan vara att jag skickar fel datatyp som svar?
+    //Send result
+    cout<<result<<"Size: "<< result.size()<<endl;
+    int sendRes = send(sock, result.c_str(), result.size()+1, 0);
+    if(sendRes == -1){
+      printf("Could not send result\n");
+      return 1;
+    }
+    //Get status (OK or ERROR)
     memset(buf, 0, sizeof(buf));
     bytesRecived = recv(sock, buf, sizeof(buf), 0);
     printf("%s\n", buf);
@@ -163,23 +141,8 @@ int main(int argc, char *argv[]){
     
     
  
-  //}
-  
-  //printf("%sBytes recived: %d\n", buf, bytesRecived);
 
-  //Check the protcols
 
-  /*int sendRes = send(sock, "OK\n", 3, sizeof("OK\n"));
-  if(sendRes == -1){
-    printf("Could not send\n");
-    return 1;
-  }
-  printf("OK\n");
-
-  memset(buf, 0, sizeof(buf));
-  bytesRecived = recv(sock, buf, sizeof(buf), 0);
-  //printf("%sBytes recived: %d\n", buf, bytesRecived);
-  //printf("")*/
 
 
   
