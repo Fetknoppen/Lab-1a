@@ -22,10 +22,6 @@ using namespace  std;
 
 int main(int argc, char *argv[]){
 
-  /*
-    Read first input, assumes <ip>:<port> syntax, convert into one string (Desthost) and one integer (port). 
-     Atm, works only on dotted notation, i.e. IPv4 and DNS. IPv6 does not work if its using ':'. 
-  */
   if(argc != 2){
     printf("Invalid input\n");
     exit(1);
@@ -39,6 +35,7 @@ int main(int argc, char *argv[]){
   //Convert port to int and host to string
   int port = atoi(Destport);
   string ipAddr = Desthost;
+  printf("Host %s, and port %d\n", Desthost, port);
   //make socket
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if(sock == -1){
@@ -59,13 +56,16 @@ int main(int argc, char *argv[]){
     printf("Error could not connect\n");
     return 1;
   }
-
+  
+  #ifdef DEBUG
+    printf("Connected to %s:%d local??\n", Desthost, port);
+  #endif
   //prata med servern
   char buf[10000];
 
   memset(buf, 0, sizeof(buf));
   int bytesRecived = recv(sock, &buf, sizeof(buf), 0);
-  printf("%s", buf);
+  //printf("%s", buf);
 
   string ok = "OK\n";
   
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
       printf("Could not send\n");
       exit(1);
     }
-    printf("OK\n");
+    //printf("OK\n");
   }
   else{
     printf("Protocols not supported.\n");
@@ -86,13 +86,14 @@ int main(int argc, char *argv[]){
 
   memset(buf, 0, sizeof(buf));
   bytesRecived = recv(sock, buf, sizeof(buf), 0);
-  printf("%s", buf);
+  //printf("%s", buf);
   char *calc = strtok(buf, " "); 
   char *num1 = strtok(NULL, " ");
   char *num2 = strtok(NULL, " ");
   int i1 = 0, i2 = 0, iresult = 0;
   float f1 = 0, f2 = 0, fresult = 0;
   string result = "";
+  printf("ASSIGNMENT: %s %s %s",calc, num1, num2);
 
   //Calculate result
   //Int
@@ -106,6 +107,7 @@ int main(int argc, char *argv[]){
       iresult = i1-i2;
     }
     else if(string(calc) == "mul"){
+
       iresult = i1*i2;
     }
     else if(string(calc) == "div"){
@@ -135,7 +137,9 @@ int main(int argc, char *argv[]){
       result = to_string(fresult);
       
     }
+    string result2 = result;
     result += '\n';
+    
     
     //Send result
     
@@ -144,16 +148,21 @@ int main(int argc, char *argv[]){
       printf("Could not send result\n");
       return 1;
     }
-    printf("%s", result.c_str());
+
+    #ifdef DEBUG
+    printf("Calculated the result to %s", result.c_str());
+    #endif
+    
     //Get status (OK or ERROR)
     memset(buf, 0, sizeof(buf));
     bytesRecived = recv(sock, buf, sizeof(buf), 0);
-    printf("%s\n", buf);
+    if(string(buf).find("OK") != string::npos){
+      printf("OK (my result = %s)\n", result2.c_str());
+    }
+    else{
+      printf("%s", buf);
+    }
     
-    
-    
- 
-
 
 
 
