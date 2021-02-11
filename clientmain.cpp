@@ -27,10 +27,15 @@ int main(int argc, char *argv[]){
     exit(1);
   }
   char delim[]=":";
-  char *Desthost=strtok(argv[1],delim);
-  char *Destport=strtok(NULL,delim);
+  char *Desthost=strtok(argv[1],delim);//kan peka på null
+  char *Destport=strtok(NULL,delim);//kan peka på null
   // *Desthost now points to a sting holding whatever came before the delimiter, ':'.
   // *Dstport points to whatever string came after the delimiter. 
+  
+  if(Desthost == NULL || Destport == NULL){
+    printf("Invalid input\n");
+    exit(1);
+  }
 
   //Convert port to int and host to string
   int port = atoi(Destport);
@@ -56,9 +61,9 @@ int main(int argc, char *argv[]){
     printf("Error could not connect\n");
     return 1;
   }
-  
+  //getsockname()
   #ifdef DEBUG
-    printf("Connected to %s:%d local??\n", Desthost, port);
+    printf("Connected to %s:%d local??\n", Desthost, port);//Anväńd getsockname()
   #endif
   //prata med servern
   char buf[10000];
