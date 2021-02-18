@@ -61,16 +61,24 @@ int main(int argc, char *argv[]){
     printf("Error could not connect\n");
     return 1;
   }
-  //getsockname()
+  char myAddress[20];
+	char *myAdd = myAddress;
+
+	struct sockaddr_in local_sin;
+	socklen_t local_sinlen = sizeof(local_sin);
+	getsockname(sock,(struct sockaddr*)&local_sin, &local_sinlen);
+	inet_ntop(local_sin.sin_family,&local_sin.sin_addr,myAddress,sizeof(myAddress));
+  myAdd = myAddress;
+
   #ifdef DEBUG
-    printf("Connected to %s:%d local??\n", Desthost, port);//Anväńd getsockname()
+    printf("Connected to %s:%d local %s:%d\n", Desthost, port, myAdd, ntohs(local_sin.sin_port));//Anväńd getsockname()
   #endif
   //prata med servern
   char buf[10000];
 
   memset(buf, 0, sizeof(buf));
   int bytesRecived = recv(sock, &buf, sizeof(buf), 0);
-  //printf("%s", buf);
+  printf("%s", buf);
 
   string ok = "OK\n";
   
@@ -81,7 +89,7 @@ int main(int argc, char *argv[]){
       printf("Could not send\n");
       exit(1);
     }
-    //printf("OK\n");
+    printf("OK\n");
   }
   else{
     printf("Protocols not supported.\n");
